@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>NODO — Renders Arquitectónicos</title>
+<title>RenderAzo — Renders Arquitectónicos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -91,7 +91,7 @@
   }
   .nav{display:flex;align-items:center;justify-content:space-between;height:76px;}
   .logo{font-weight:700;font-size:20px;letter-spacing:.02em;display:flex;align-items:center;gap:9px;}
-  .logo img{height:32px;width:auto;display:block;}
+  .logo img{height:44px;width:auto;display:block;}
   .logo .dot{width:9px;height:9px;background:var(--signal);border-radius:1px;}
   .nav-links{display:flex;gap:34px;font-size:14px;}
   .nav-links a{color:var(--ink-dim);transition:color .15s;position:relative;padding:4px 0;}
@@ -138,9 +138,23 @@
   .service-card h3{font-size:19px;margin:16px 0 10px;font-weight:600;}
   .service-card p{color:var(--ink-dim);font-size:14px;line-height:1.6;margin:0;}
 
+  .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);}
+  .category-card{background:var(--panel);display:flex;flex-direction:column;transition:background .2s ease;}
+  .category-card:hover{background:var(--panel-raised);}
+  .cat-thumb{aspect-ratio:4/3;position:relative;overflow:hidden;background-size:cover;background-position:center;}
+  .cat-thumb .compare{aspect-ratio:4/3;max-width:none;margin:0;border:none;}
+  .cat-thumb .compare .handle .knob{width:28px;height:28px;}
+  .category-card h3{font-size:16px;margin:16px 16px 8px;font-weight:600;}
+  .category-card p{color:var(--ink-dim);font-size:13px;line-height:1.55;margin:0 16px;flex:1;}
+  .cat-more{
+    margin:14px 16px 20px;align-self:flex-start;background:none;border:none;cursor:pointer;padding:0;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--cyan);
+  }
+  .cat-more:hover{color:var(--signal);}
+
   /* ---------- antes/despues ---------- */
-  .compare{position:relative;aspect-ratio:16/9;border:1px solid var(--stroke);overflow:hidden;user-select:none;cursor:ew-resize;}
-  .compare .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;}
+  .compare{position:relative;aspect-ratio:16/9;border:1px solid var(--stroke);overflow:hidden;user-select:none;cursor:ew-resize;max-width:680px;margin:0 auto;}
+  .compare .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#1a1c1f;}
   .compare .before{background:repeating-linear-gradient(45deg, var(--panel) 0 8px, var(--panel-raised) 8px 16px);}
   .compare .after{background:linear-gradient(135deg,#2b2f36,#1a1c1f);overflow:hidden;}
   .compare .after-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
@@ -161,9 +175,8 @@
   .filter-btn.active{border-color:var(--signal);color:var(--signal);}
   .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
   .g-item{aspect-ratio:4/3;cursor:pointer;position:relative;background-size:cover;background-position:center;}
-  .compare-list{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
-  .compare-list .compare{aspect-ratio:16/9;}
-  .compare-list .compare-caption{grid-column:1/-1;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin:-10px 0 4px;}
+  .compare-list{display:flex;flex-direction:column;gap:40px;margin-top:32px;}
+  .compare-list .compare-caption{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-bottom:12px;}
   .g-item .meta{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:linear-gradient(transparent,rgba(0,0,0,.65));font-family:'IBM Plex Mono',monospace;font-size:11px;display:flex;justify-content:space-between;color:var(--ink-dim);}
   .g-item .cat-tag{position:absolute;top:10px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan);border:1px solid var(--cyan);padding:3px 7px;border-radius:2px;background:rgba(21,23,26,.6);}
   .g-item:hover .corner-ticks::before,.g-item:hover .corner-ticks::after{opacity:1;}
@@ -228,6 +241,7 @@
   @media (max-width:980px){
     .hero-grid{grid-template-columns:1fr;}
     .services-grid{grid-template-columns:repeat(2,1fr);}
+    .category-grid{grid-template-columns:repeat(2,1fr);}
     .gallery{grid-template-columns:repeat(2,1fr);}
     .video-grid{grid-template-columns:repeat(2,1fr);}
     .price-grid{grid-template-columns:repeat(2,1fr);}
@@ -238,7 +252,7 @@
   @media (max-width:680px){
     .nav-links{display:none;}
     .burger{display:flex;}
-    .services-grid,.gallery,.video-grid,.price-grid{grid-template-columns:1fr;}
+    .services-grid,.gallery,.video-grid,.price-grid,.category-grid{grid-template-columns:1fr;}
     section{padding:64px 0;}
     .hero{padding-top:40px;}
     .hero-ctas{width:100%;}
@@ -256,7 +270,7 @@
 
 <header>
   <div class="wrap nav">
-    <div class="logo" id="logoSlot"><span class="dot"></span>NODO<span style="color:var(--ink-faint);font-weight:400;">renders</span></div>
+    <div class="logo" id="logoSlot"><span class="dot"></span>RenderAzo</div>
     <nav class="nav-links">
       <a href="#servicios">Servicios</a>
       <a href="#portfolio">Portfolio</a>
@@ -305,14 +319,14 @@
   </div>
 </section>
 
-<!-- ================= SERVICIOS ================= -->
+<!-- ================= SERVICIOS (tarjetas por categoría) ================= -->
 <section id="servicios">
   <div class="wrap">
     <div class="section-head">
       <div><div class="eyebrow">Qué hacemos</div><h2>Servicios</h2></div>
-      <p>De la maqueta digital a la imagen final: cubrimos cada etapa de la visualización de tu proyecto.</p>
+      <p>Un vistazo rápido a cada categoría — hacé clic en "Ver más" para ver todos los ejemplos.</p>
     </div>
-    <div class="services-grid" id="servicesGrid"></div>
+    <div class="category-grid" id="categoryGrid"></div>
   </div>
 </section>
 
@@ -405,7 +419,7 @@
 
 <footer>
   <div class="wrap foot-row">
-    <div>© <span id="year"></span> <span id="footStudioName">NODO Renders</span> — Plantilla de demostración</div>
+    <div>© <span id="year"></span> <span id="footStudioName">RenderAzo</span> — Plantilla de demostración</div>
     <div class="foot-links">
       <a href="#servicios">Servicios</a><a href="#portfolio">Portfolio</a><a href="#contacto">Contacto</a>
     </div>
@@ -433,7 +447,7 @@
 const DATA_ENDPOINT = '/.netlify/functions/get-data';
 
 const FALLBACK_DB = {
-  studio: { name: 'NODO Renders', logo: null },
+  studio: { name: 'RenderAzo', logo: null },
   heroImage: null,
   stats: [
     { num: '9+', label: 'Años de experiencia' },
@@ -480,11 +494,28 @@ function youtubeId(url) {
   return m ? m[1] : null;
 }
 
+function truncate(str, n) {
+  if (!str) return '';
+  const s = String(str).trim();
+  return s.length > n ? s.slice(0, n).trim() + '…' : s;
+}
+
+function normalizeLoose(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+window.__logoFallback = function (imgEl, name) {
+  const span = document.createElement('span');
+  span.textContent = name;
+  imgEl.replaceWith(span);
+};
+
 /* ---------------- render: identidad ---------------- */
 function renderIdentity() {
   const slot = $('#logoSlot');
+  const name = DB.studio.name || 'RenderAzo';
   if (DB.studio.logo) {
-    slot.innerHTML = `<img src="${DB.studio.logo}" alt="${DB.studio.name || 'Logo del estudio'}">`;
+    slot.innerHTML = `<img src="${DB.studio.logo}" alt="${name}" onerror='window.__logoFallback(this, ${JSON.stringify(name)})'>`;
   } else if (DB.studio.name) {
     slot.innerHTML = `<span class="dot"></span>${DB.studio.name}`;
   }
@@ -509,14 +540,61 @@ function renderStats() {
     </div>`).join('');
 }
 
-/* ---------------- render: servicios ---------------- */
-function renderServices() {
-  $('#servicesGrid').innerHTML = DB.services.map((s, i) => `
-    <div class="service-card">
-      <div class="idx mono">0${i + 1}</div>
-      <h3>${s.title}</h3>
-      <p>${s.text}</p>
-    </div>`).join('');
+/* ---------------- render: categorías (servicios + ejemplo visual, unificado) ---------------- */
+const CATEGORY_KEYWORDS = [
+  { key: 'Interiores', kw: 'interior' },
+  { key: 'Exteriores', kw: 'exterior' },
+  { key: 'Remodelaciones', kw: 'remodel' },
+  { key: 'Videos', kw: 'video' },
+];
+
+function categoryThumb(catKey, idx) {
+  if (catKey === 'Interiores' || catKey === 'Exteriores') {
+    const first = DB.gallery.find((g) => g.cat === catKey);
+    return `<div class="cat-thumb grid-tile corner-ticks" style="${first?.image ? `background-image:url('${first.image}')` : ''}"></div>`;
+  }
+  if (catKey === 'Remodelaciones') {
+    const r = DB.remodelaciones[0];
+    return `<div class="cat-thumb">${compareMarkup(`cat-remo-${idx}`, r?.before, r?.after, 'Antes', 'Después')}</div>`;
+  }
+  if (catKey === 'Videos') {
+    const v = DB.videos[0];
+    const id = v ? youtubeId(v.url) : null;
+    if (id) return `<div class="cat-thumb"><iframe src="https://www.youtube.com/embed/${id}" title="video" loading="lazy" allowfullscreen></iframe></div>`;
+    return `<div class="cat-thumb grid-tile corner-ticks"><div class="play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></div>`;
+  }
+  return `<div class="cat-thumb grid-tile corner-ticks"></div>`;
+}
+
+function renderCategories() {
+  const grid = $('#categoryGrid');
+  grid.innerHTML = DB.services.map((s, i) => {
+    const match = CATEGORY_KEYWORDS.find((c) => normalizeLoose(s.title).includes(c.kw));
+    const catKey = match ? match.key : '';
+    return `
+      <div class="category-card" data-cat="${catKey}">
+        ${categoryThumb(catKey, i)}
+        <h3>${s.title}</h3>
+        <p>${truncate(s.text, 110)}</p>
+        <button class="cat-more mono" data-cat="${catKey}">Ver más →</button>
+      </div>`;
+  }).join('');
+
+  $$('.cat-more').forEach((btn) => btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    if (cat === 'Videos') {
+      document.querySelector('#videos').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (cat) {
+      activeFilter = cat;
+      renderFilters();
+      renderGallery();
+    }
+    document.querySelector('#portfolio').scrollIntoView({ behavior: 'smooth' });
+  }));
+
+  initCompareSliders('.category-card .compare');
 }
 
 /* ---------------- render: portfolio (nuestros trabajos) ---------------- */
@@ -560,13 +638,11 @@ function renderGallery() {
   const list = $('#compareList');
   if (showSliders && DB.remodelaciones.length) {
     list.innerHTML = DB.remodelaciones.map((r, i) => `
-      <div class="compare-caption mono">${r.title || 'Remodelación'}</div>
-      <div></div>
-      ${compareMarkup(`remo-${i}`, r.before, r.after, 'Antes', 'Después')}
-      <div></div>
+      <div>
+        <div class="compare-caption mono">${r.title || 'Remodelación'}</div>
+        ${compareMarkup(`remo-${i}`, r.before, r.after, 'Antes', 'Después')}
+      </div>
     `).join('');
-    // el grid de 2 columnas necesita que cada slider ocupe toda la fila
-    $$('.compare-list .compare').forEach((el) => { el.style.gridColumn = '1/-1'; });
     initCompareSliders('#compareList .compare');
   } else {
     list.innerHTML = '';
@@ -699,7 +775,7 @@ $('#contactForm').addEventListener('submit', (e) => {
 function renderAll() {
   renderIdentity();
   renderStats();
-  renderServices();
+  renderCategories();
   renderFilters();
   renderGallery();
   renderProceso();
