@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RenderAzo — Renders Arquitectónicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#15171A;
+    --panel:#1D2024;
+    --panel-raised:#262A30;
+    --stroke:#333941;
+    --ink:#ECE9E2;
+    --ink-dim:#9BA3AE;
+    --ink-faint:#5C636D;
+    --cyan:#4FD8E0;
+    --signal:#FF5A2B;
+    --signal-dim:#8f3a1f;
+    --radius:2px;
+    --maxw:1240px;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--void);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  ::selection{background:var(--signal);color:#fff;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+
+  /* ---------- utility patterns ---------- */
+  .grid-tile{
+    position:relative;
+    background:
+      linear-gradient(var(--panel-raised) 1px, transparent 1px) 0 0/100% 20%,
+      linear-gradient(90deg, var(--panel-raised) 1px, transparent 1px) 0 0/20% 100%,
+      var(--panel);
+    overflow:hidden;
+  }
+  .corner-ticks::before,.corner-ticks::after{content:'';position:absolute;width:14px;height:14px;border:1.5px solid var(--cyan);opacity:.7;}
+  .corner-ticks::before{top:10px;left:10px;border-right:none;border-bottom:none;}
+  .corner-ticks::after{bottom:10px;right:10px;border-left:none;border-top:none;}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:'';width:22px;height:1px;background:var(--cyan);}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:14px 26px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-radius:var(--radius);
+    cursor:pointer;border:1px solid transparent;
+    transition:transform .15s ease, background .2s ease, border-color .2s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-signal{background:var(--signal);color:#fff;}
+  .btn-signal:hover{background:#ff6b3d;}
+  .btn-ghost{border-color:var(--stroke);color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+
+  section{padding:96px 0;border-bottom:1px solid var(--stroke);}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:56px;flex-wrap:wrap;}
+  .section-head h2{font-size:clamp(28px,4vw,44px);margin:14px 0 0;font-weight:600;line-height:1.05;}
+  .section-head p{color:var(--ink-dim);max-width:420px;margin:0;font-size:15px;line-height:1.6;}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(21,23,26,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--stroke);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:76px;}
+  .logo{font-weight:700;font-size:20px;letter-spacing:.02em;display:flex;align-items:center;gap:9px;}
+  .logo img{height:44px;width:auto;display:block;}
+  .logo .dot{width:9px;height:9px;background:var(--signal);border-radius:1px;}
+  .nav-links{display:flex;gap:34px;font-size:14px;}
+  .nav-links a{color:var(--ink-dim);transition:color .15s;position:relative;padding:4px 0;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:0;padding:6px;}
+  .burger span{width:22px;height:2px;background:var(--ink);}
+
+  /* ---------- hero ---------- */
+  .hero{border-bottom:1px solid var(--stroke);padding:64px 0 0;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+  .hud{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);display:flex;gap:18px;margin-bottom:22px;}
+  .hero h1{font-size:clamp(38px,5.4vw,68px);line-height:1.02;font-weight:700;margin:0 0 22px;}
+  .hero h1 em{font-style:normal;color:var(--signal);}
+  .hero p.lead{color:var(--ink-dim);font-size:17px;line-height:1.65;max-width:480px;margin:0 0 34px;}
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:52px;}
+
+  .viewport{
+    position:relative;aspect-ratio:4/3;border:1px solid var(--stroke);
+    background:
+      linear-gradient(var(--panel-raised) 1px, transparent 1px) 0 0/100% 8.3%,
+      linear-gradient(90deg, var(--panel-raised) 1px, transparent 1px) 0 0/8.3% 100%,
+      var(--panel);
+  }
+  .viewport .tag{position:absolute;top:16px;left:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);border:1px solid var(--cyan);padding:4px 8px;border-radius:2px;}
+  .viewport .caption{position:absolute;bottom:16px;left:16px;right:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);display:flex;justify-content:space-between;}
+  .viewport .crosshair{position:absolute;top:50%;left:50%;width:46px;height:46px;transform:translate(-50%,-50%);border:1px solid var(--signal);border-radius:50%;opacity:.6;}
+  .viewport .crosshair::before,.viewport .crosshair::after{content:'';position:absolute;background:var(--signal);}
+  .viewport .crosshair::before{top:50%;left:-10px;right:-10px;height:1px;transform:translateY(-50%);}
+  .viewport .crosshair::after{left:50%;top:-10px;bottom:-10px;width:1px;transform:translateX(-50%);}
+
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--stroke);margin-top:56px;}
+  .stat{padding:26px 24px;border-right:1px solid var(--stroke);}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,3vw,34px);font-weight:700;color:var(--ink);}
+  .stat .num span{color:var(--signal);}
+  .stat .label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;}
+
+  /* ---------- servicios ---------- */
+  .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);}
+  .service-card{background:var(--panel);padding:34px 28px;transition:background .2s ease;}
+  .service-card:hover{background:var(--panel-raised);}
+  .service-card .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--signal);}
+  .service-card h3{font-size:19px;margin:16px 0 10px;font-weight:600;}
+  .service-card p{color:var(--ink-dim);font-size:14px;line-height:1.6;margin:0;}
+
+  .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);}
+  .category-card{background:var(--panel);display:flex;flex-direction:column;transition:background .2s ease;}
+  .category-card:hover{background:var(--panel-raised);}
+  .cat-thumb{aspect-ratio:4/3;position:relative;overflow:hidden;background-size:cover;background-position:center;}
+  .cat-thumb .compare{aspect-ratio:4/3;max-width:none;margin:0;border:none;}
+  .cat-thumb .compare .handle .knob{width:28px;height:28px;}
+  .category-card h3{font-size:16px;margin:16px 16px 8px;font-weight:600;}
+  .category-card p{color:var(--ink-dim);font-size:13px;line-height:1.55;margin:0 16px;flex:1;}
+  .cat-more{
+    margin:14px 16px 20px;align-self:flex-start;background:none;border:none;cursor:pointer;padding:0;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--cyan);
+  }
+  .cat-more:hover{color:var(--signal);}
+
+  /* ---------- antes/despues ---------- */
+  .compare{position:relative;aspect-ratio:16/9;border:1px solid var(--stroke);overflow:hidden;user-select:none;cursor:ew-resize;max-width:680px;margin:0 auto;}
+  .compare .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#1a1c1f;}
+  .compare .before{background:repeating-linear-gradient(45deg, var(--panel) 0 8px, var(--panel-raised) 8px 16px);}
+  .compare .after{background:linear-gradient(135deg,#2b2f36,#1a1c1f);overflow:hidden;}
+  .compare .after-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .compare .label{position:absolute;top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:2px;}
+  .compare .label.l-before{left:16px;background:rgba(21,23,26,.7);border:1px solid var(--ink-faint);color:var(--ink-dim);}
+  .compare .label.l-after{right:16px;background:rgba(255,90,43,.15);border:1px solid var(--signal);color:var(--signal);}
+  .compare .handle{position:absolute;top:0;bottom:0;width:2px;background:var(--cyan);}
+  .compare .handle .knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:var(--cyan);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  .compare .knob svg{width:16px;height:16px;}
+  .compare-wire{background-image:linear-gradient(var(--ink-faint) 1px,transparent 1px),linear-gradient(90deg,var(--ink-faint) 1px,transparent 1px);background-size:24px 24px;opacity:.35;position:absolute;inset:0;}
+
+  /* ---------- portfolio ---------- */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;}
+  .filter-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+    padding:9px 16px;border:1px solid var(--stroke);border-radius:2px;background:transparent;color:var(--ink-dim);cursor:pointer;
+  }
+  .filter-btn.active{border-color:var(--signal);color:var(--signal);}
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .g-item{aspect-ratio:4/3;cursor:pointer;position:relative;background-size:cover;background-position:center;}
+  .compare-list{display:flex;flex-direction:column;gap:40px;margin-top:32px;}
+  .compare-list .compare-caption{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-bottom:12px;}
+  .g-item .meta{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:linear-gradient(transparent,rgba(0,0,0,.65));font-family:'IBM Plex Mono',monospace;font-size:11px;display:flex;justify-content:space-between;color:var(--ink-dim);}
+  .g-item .cat-tag{position:absolute;top:10px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan);border:1px solid var(--cyan);padding:3px 7px;border-radius:2px;background:rgba(21,23,26,.6);}
+  .g-item:hover .corner-ticks::before,.g-item:hover .corner-ticks::after{opacity:1;}
+
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(10,11,13,.92);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px;}
+  .lightbox.open{display:flex;}
+  .lightbox-inner{max-width:900px;width:100%;}
+  .lightbox .lb-frame{aspect-ratio:4/3;}
+  .lightbox .lb-cap{margin-top:14px;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);}
+  .lb-close{position:absolute;top:24px;right:32px;font-family:'IBM Plex Mono',monospace;color:var(--ink);background:none;border:1px solid var(--stroke);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:16px;}
+
+  /* ---------- videos ---------- */
+  .video-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .video-card{aspect-ratio:9/16;position:relative;}
+  .video-card iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,90,43,.15);border:1px solid var(--signal);display:flex;align-items:center;justify-content:center;}
+  .play svg{width:16px;height:16px;fill:var(--signal);margin-left:2px;}
+  .video-card .meta{position:absolute;bottom:14px;left:14px;right:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);}
+
+  /* ---------- precios ---------- */
+  .price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);}
+  .price-card{background:var(--panel);padding:30px 24px;display:flex;flex-direction:column;}
+  .price-card.featured{background:var(--panel-raised);}
+  .price-card .p-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal);text-transform:uppercase;letter-spacing:.06em;}
+  .price-card h3{font-size:18px;margin:12px 0 18px;font-weight:600;}
+  .price-card .amount{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;margin-bottom:4px;}
+  .price-card .amount span{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);font-weight:400;}
+  .price-card ul{list-style:none;margin:18px 0 26px;padding:0;flex:1;}
+  .price-card li{font-size:13px;color:var(--ink-dim);padding:8px 0;border-top:1px solid var(--stroke);display:flex;gap:8px;}
+  .price-card li::before{content:'—';color:var(--cyan);}
+  .price-note{margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);}
+
+  /* ---------- about ---------- */
+  .about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start;}
+  .about-grid p{color:var(--ink-dim);font-size:16px;line-height:1.75;margin:0 0 18px;}
+  .about-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--stroke);border:1px solid var(--stroke);margin-top:32px;}
+  .about-stats div{background:var(--panel);padding:22px;}
+  .about-stats .num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;}
+  .about-stats .label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);margin-top:4px;}
+
+  /* ---------- contacto ---------- */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:8px;}
+  .field input,.field textarea{
+    width:100%;background:var(--panel);border:1px solid var(--stroke);color:var(--ink);
+    padding:13px 14px;font-family:'Inter',sans-serif;font-size:14px;border-radius:2px;
+  }
+  .field input:focus,.field textarea:focus{border-color:var(--cyan);outline:none;}
+  .contact-info h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;color:var(--ink-faint);margin-bottom:20px;font-family:'IBM Plex Mono',monospace;}
+  .contact-line{display:flex;justify-content:space-between;padding:16px 0;border-top:1px solid var(--stroke);font-size:15px;}
+  .contact-line span:first-child{color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;}
+  .contact-line a:hover{color:var(--cyan);}
+  .form-note{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);margin-top:10px;}
+
+  footer{padding:40px 0;}
+  .foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-faint);}
+  .foot-links{display:flex;gap:24px;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;}
+    .services-grid{grid-template-columns:repeat(2,1fr);}
+    .category-grid{grid-template-columns:repeat(2,1fr);}
+    .gallery{grid-template-columns:repeat(2,1fr);}
+    .video-grid{grid-template-columns:repeat(2,1fr);}
+    .price-grid{grid-template-columns:repeat(2,1fr);}
+    .about-grid,.contact-grid{grid-template-columns:1fr;gap:40px;}
+    .stat-strip{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(2){border-right:none;}
+  }
+  @media (max-width:680px){
+    .nav-links{display:none;}
+    .burger{display:flex;}
+    .services-grid,.gallery,.video-grid,.price-grid,.category-grid{grid-template-columns:1fr;}
+    section{padding:64px 0;}
+    .hero{padding-top:40px;}
+    .hero-ctas{width:100%;}
+    .hero-ctas .btn{flex:1;justify-content:center;}
+    .stat-strip{grid-template-columns:1fr 1fr;}
+  }
+
+  /* mobile nav drawer */
+  .mobile-drawer{position:fixed;inset:0;top:76px;background:var(--void);z-index:99;display:none;flex-direction:column;padding:32px 24px;gap:6px;}
+  .mobile-drawer.open{display:flex;}
+  .mobile-drawer a{padding:16px 0;border-bottom:1px solid var(--stroke);font-size:16px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo" id="logoSlot"><span class="dot"></span>RenderAzo</div>
+    <nav class="nav-links">
+      <a href="#servicios">Servicios</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#videos">Videos</a>
+      <a href="#precios">Precios</a>
+      <a href="#nosotros">Quiénes somos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="nav-right">
+      <a href="#contacto" class="btn btn-signal" style="padding:10px 18px;">Pedir cotización</a>
+      <button class="burger" id="burgerBtn" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-drawer" id="mobileDrawer">
+  <a href="#servicios">Servicios</a>
+  <a href="#portfolio">Portfolio</a>
+  <a href="#videos">Videos</a>
+  <a href="#precios">Precios</a>
+  <a href="#nosotros">Quiénes somos</a>
+  <a href="#contacto">Contacto</a>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="hud"><span>X:00.0</span><span>Y:00.0</span><span>Z:00.0</span><span>RENDER_ENGINE: ACTIVO</span></div>
+        <div class="eyebrow">Estudio de renderizado arquitectónico</div>
+        <h1>Tu proyecto,<br><em>hiperrealista</em><br>antes de construirlo.</h1>
+        <p class="lead">Convertimos planos y bocetos en imágenes y videos fotorrealistas. Interiores, exteriores, animaciones 3D y recorridos virtuales para vender tu proyecto antes del primer ladrillo.</p>
+        <div class="hero-ctas">
+          <a href="#contacto" class="btn btn-signal">Pedir cotización →</a>
+          <a href="#portfolio" class="btn btn-ghost">Ver portfolio</a>
+        </div>
+      </div>
+      <div class="viewport corner-ticks" id="heroViewport">
+        <div class="tag mono">IMG_HERO.render</div>
+        <div class="crosshair"></div>
+        <div class="caption"><span>1600×1200</span><span>ESPACIO PARA IMAGEN DESTACADA</span></div>
+      </div>
+    </div>
+    <div class="stat-strip" id="statStrip"></div>
+  </div>
+</section>
+
+<!-- ================= SERVICIOS (tarjetas por categoría) ================= -->
+<section id="servicios">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Qué hacemos</div><h2>Servicios</h2></div>
+      <p>Un vistazo rápido a cada categoría — hacé clic en "Ver más" para ver todos los ejemplos.</p>
+    </div>
+    <div class="category-grid" id="categoryGrid"></div>
+  </div>
+</section>
+
+<!-- ================= ANTES / DESPUES ================= -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">El proceso</div><h2>De la línea al render</h2></div>
+      <p>Arrastrá el separador para ver la transformación — así presentamos cada proyecto a nuestros clientes.</p>
+    </div>
+    <div id="procesoSlider"></div>
+  </div>
+</section>
+
+<!-- ================= NUESTROS TRABAJOS ================= -->
+<section id="portfolio">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Trabajos realizados</div><h2>Nuestros trabajos</h2></div>
+      <p id="categoryDesc">Filtrá por tipo de proyecto para ver ejemplos de cada categoría.</p>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="gallery" id="gallery"></div>
+    <div class="compare-list" id="compareList"></div>
+  </div>
+</section>
+
+<!-- ================= VIDEOS ================= -->
+<section id="videos">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Recorridos y animaciones</div><h2>Videos cortos</h2></div>
+      <p>Clips verticales listos para redes: recorridos 3D, tours virtuales y detalles de materiales.</p>
+    </div>
+    <div class="video-grid" id="videoGrid"></div>
+  </div>
+</section>
+
+<!-- ================= PRECIOS ================= -->
+<section id="precios">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Inversión estimada</div><h2>Precios</h2></div>
+      <p>Valores orientativos. La cotización final depende de la complejidad, cantidad de vistas y plazos.</p>
+    </div>
+    <div class="price-grid" id="priceGrid"></div>
+    <div class="price-note">* Precios en ARS, sujetos a variación según cotización del dólar y complejidad del proyecto. Consultanos por proyectos a medida.</div>
+  </div>
+</section>
+
+<!-- ================= NOSOTROS ================= -->
+<section id="nosotros">
+  <div class="wrap">
+    <div class="about-grid">
+      <div>
+        <div class="eyebrow">Quiénes somos</div>
+        <h2 style="font-size:clamp(26px,3.4vw,36px);margin:14px 0 0;">El estudio</h2>
+      </div>
+      <div>
+        <p id="aboutText">Somos un estudio de renderizado arquitectónico que ayuda a arquitectos, estudios y desarrolladores a mostrar sus proyectos antes de construirlos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACTO ================= -->
+<section id="contacto" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="section-head">
+      <div><div class="eyebrow">Hablemos de tu proyecto</div><h2>Contacto</h2></div>
+    </div>
+    <div class="contact-grid">
+      <form id="contactForm">
+        <div class="field"><label>Nombre</label><input type="text" name="nombre" required></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required></div>
+        <div class="field"><label>Contame sobre tu proyecto</label><textarea name="mensaje" rows="4" required></textarea></div>
+        <button type="submit" class="btn btn-signal">Enviar consulta</button>
+        <div class="form-note">* Este formulario es de demostración. Se puede conectar a Formspree, Google Forms o WhatsApp sin costo — lo dejamos listo cuando definamos el envío final.</div>
+      </form>
+      <div class="contact-info">
+        <h3>Información directa</h3>
+        <div class="contact-line"><span>WhatsApp</span><a href="#" id="waLink">+54 9 11 0000 0000</a></div>
+        <div class="contact-line"><span>Email</span><a href="#" id="mailLink">hola@nodorenders.com</a></div>
+        <div class="contact-line"><span>Ubicación</span><span>Buenos Aires — trabajamos en todo el país</span></div>
+        <div class="contact-line"><span>Instagram</span><a href="#">@nodorenders</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>© <span id="year"></span> <span id="footStudioName">RenderAzo</span> — Plantilla de demostración</div>
+    <div class="foot-links">
+      <a href="#servicios">Servicios</a><a href="#portfolio">Portfolio</a><a href="#contacto">Contacto</a>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <div class="lightbox-inner">
+    <div class="lb-frame viewport corner-ticks" id="lbFrame"><div class="tag mono" id="lbTag">IMG.render</div><div class="crosshair"></div></div>
+    <div class="lb-cap"><span id="lbTitle"></span><span id="lbCat"></span></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ORIGEN DE DATOS
+   ---------------------------------------------------------------------
+   El sitio le pide el contenido a la función proxy de Netlify, que a su
+   vez lo lee de Airtable de forma segura (el token nunca viaja hasta
+   acá). Si esa función todavía no está desplegada o falla por algún
+   motivo, el sitio no se rompe: usa FALLBACK_DB, un set de datos de
+   ejemplo, para que siempre haya algo que mostrar.
+===================================================================== */
+const DATA_ENDPOINT = '/.netlify/functions/get-data';
+
+const FALLBACK_DB = {
+  studio: { name: 'RenderAzo', logo: null },
+  heroImage: null,
+  stats: [
+    { num: '9+', label: 'Años de experiencia' },
+    { num: '10K+', label: 'Imágenes producidas' },
+    { num: '1.7K+', label: 'Clientes satisfechos' },
+    { num: '15', label: 'Días promedio de entrega' },
+  ],
+  services: [
+    { title: 'Renders interiores', text: 'Con las medidas y referencias del proyecto, mostramos cada ambiente con materiales y luz realistas.' },
+    { title: 'Renders exteriores', text: 'Fachadas, entornos y paisajismo integrados para vender el proyecto desde afuera.' },
+    { title: 'Animación y video 3D', text: 'Recorridos que muestran el proyecto en movimiento, ideales para redes y presentaciones.' },
+  ],
+  gallery: [
+    { title: 'Living moderno', cat: 'Interiores', image: null, destacado: true },
+    { title: 'Fachada casa', cat: 'Exteriores', image: null, destacado: false },
+  ],
+  compareProceso: { title: 'Del modelo 3D al render final', before: null, after: null },
+  remodelaciones: [],
+  videos: [
+    { title: 'Recorrido_Living.mp4', url: '', cat: 'Interior' },
+  ],
+  pricing: [
+    { tag: 'Básico', title: 'Render interior', price: 35000, unit: 'por imagen', items: ['1 vista', 'Full HD', '1 ronda de ajustes', 'Entrega en 5 días'], featured: false },
+    { tag: 'Popular', title: 'Render exterior', price: 45000, unit: 'por imagen', items: ['1 vista', 'Full HD', '2 rondas de ajustes', 'Entrega en 5 días'], featured: true },
+  ],
+  about: {
+    text: 'Somos un estudio de renderizado arquitectónico que ayuda a arquitectos, estudios y desarrolladores a mostrar sus proyectos antes de construirlos.',
+    descInteriores: 'Ambientes con materiales y luz realistas.',
+    descExteriores: 'Fachadas y entornos integrados al paisaje.',
+    descRemodelaciones: 'Reformas reales, antes y después.',
+  },
+  contact: { whatsapp: '', email: '', instagram: '' },
+};
+
+let DB = FALLBACK_DB;
+
+/* ---------------- helpers ---------------- */
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+
+function youtubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
+  return m ? m[1] : null;
+}
+
+function truncate(str, n) {
+  if (!str) return '';
+  const s = String(str).trim();
+  return s.length > n ? s.slice(0, n).trim() + '…' : s;
+}
+
+function normalizeLoose(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+window.__logoFallback = function (imgEl, name) {
+  const span = document.createElement('span');
+  span.textContent = name;
+  imgEl.replaceWith(span);
+};
+
+/* ---------------- render: identidad ---------------- */
+function renderIdentity() {
+  const slot = $('#logoSlot');
+  const name = DB.studio.name || 'RenderAzo';
+  if (DB.studio.logo) {
+    slot.innerHTML = `<img src="${DB.studio.logo}" alt="${name}" onerror='window.__logoFallback(this, ${JSON.stringify(name)})'>`;
+  } else if (DB.studio.name) {
+    slot.innerHTML = `<span class="dot"></span>${DB.studio.name}`;
+  }
+  if (DB.studio.name) {
+    document.title = `${DB.studio.name} — Renders Arquitectónicos`;
+    $('#footStudioName').textContent = DB.studio.name;
+  }
+  if (DB.heroImage) {
+    const vp = $('#heroViewport');
+    vp.style.backgroundImage = `linear-gradient(rgba(21,23,26,.15),rgba(21,23,26,.35)), url('${DB.heroImage}')`;
+    vp.style.backgroundSize = 'cover';
+    vp.style.backgroundPosition = 'center';
+  }
+}
+
+/* ---------------- render: stats ---------------- */
+function renderStats() {
+  $('#statStrip').innerHTML = DB.stats.map((s) => `
+    <div class="stat">
+      <div class="num">${s.num}</div>
+      <div class="label">${s.label}</div>
+    </div>`).join('');
+}
+
+/* ---------------- render: categorías (servicios + ejemplo visual, unificado) ---------------- */
+const CATEGORY_KEYWORDS = [
+  { key: 'Interiores', kw: 'interior' },
+  { key: 'Exteriores', kw: 'exterior' },
+  { key: 'Remodelaciones', kw: 'remodel' },
+  { key: 'Videos', kw: 'video' },
+];
+
+function categoryThumb(catKey, idx) {
+  if (catKey === 'Interiores' || catKey === 'Exteriores') {
+    const first = DB.gallery.find((g) => g.cat === catKey);
+    return `<div class="cat-thumb grid-tile corner-ticks" style="${first?.image ? `background-image:url('${first.image}')` : ''}"></div>`;
+  }
+  if (catKey === 'Remodelaciones') {
+    const r = DB.remodelaciones[0];
+    return `<div class="cat-thumb">${compareMarkup(`cat-remo-${idx}`, r?.before, r?.after, 'Antes', 'Después')}</div>`;
+  }
+  if (catKey === 'Videos') {
+    const v = DB.videos[0];
+    const id = v ? youtubeId(v.url) : null;
+    if (id) return `<div class="cat-thumb"><iframe src="https://www.youtube.com/embed/${id}" title="video" loading="lazy" allowfullscreen></iframe></div>`;
+    return `<div class="cat-thumb grid-tile corner-ticks"><div class="play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></div>`;
+  }
+  return `<div class="cat-thumb grid-tile corner-ticks"></div>`;
+}
+
+function renderCategories() {
+  const grid = $('#categoryGrid');
+  grid.innerHTML = DB.services.map((s, i) => {
+    const match = CATEGORY_KEYWORDS.find((c) => normalizeLoose(s.title).includes(c.kw));
+    const catKey = match ? match.key : '';
+    return `
+      <div class="category-card" data-cat="${catKey}">
+        ${categoryThumb(catKey, i)}
+        <h3>${s.title}</h3>
+        <p>${truncate(s.text, 110)}</p>
+        <button class="cat-more mono" data-cat="${catKey}">Ver más →</button>
+      </div>`;
+  }).join('');
+
+  $$('.cat-more').forEach((btn) => btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    if (cat === 'Videos') {
+      document.querySelector('#videos').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (cat) {
+      activeFilter = cat;
+      renderFilters();
+      renderGallery();
+    }
+    document.querySelector('#portfolio').scrollIntoView({ behavior: 'smooth' });
+  }));
+
+  initCompareSliders('.category-card .compare');
+}
+
+/* ---------------- render: portfolio (nuestros trabajos) ---------------- */
+let activeFilter = 'Todos';
+
+function categoryDescriptionFor(cat) {
+  if (cat === 'Interiores') return DB.about.descInteriores;
+  if (cat === 'Exteriores') return DB.about.descExteriores;
+  if (cat === 'Remodelaciones') return DB.about.descRemodelaciones;
+  return 'Filtrá por tipo de proyecto para ver ejemplos de cada categoría.';
+}
+
+function renderFilters() {
+  const cats = ['Todos', 'Interiores', 'Exteriores', 'Remodelaciones'];
+  $('#filters').innerHTML = cats.map((c) => `
+    <button class="filter-btn ${c === activeFilter ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('');
+  $$('.filter-btn').forEach((btn) => btn.addEventListener('click', () => {
+    activeFilter = btn.dataset.cat;
+    renderFilters();
+    renderGallery();
+  }));
+}
+
+function renderGallery() {
+  $('#categoryDesc').textContent = categoryDescriptionFor(activeFilter);
+
+  const showSliders = activeFilter === 'Remodelaciones' || activeFilter === 'Todos';
+  const galleryItems = activeFilter === 'Todos'
+    ? DB.gallery
+    : DB.gallery.filter((g) => g.cat === activeFilter);
+
+  $('#gallery').style.display = (activeFilter === 'Remodelaciones' && DB.gallery.filter(g=>g.cat==='Remodelaciones').length===0) ? 'none' : 'grid';
+  $('#gallery').innerHTML = galleryItems.map((g, i) => `
+    <div class="g-item grid-tile corner-ticks" data-idx="${i}" data-title="${g.title}" data-cat="${g.cat}"
+         style="${g.image ? `background-image:url('${g.image}')` : ''}">
+      <span class="cat-tag mono">${g.cat}</span>
+      <div class="meta"><span>${g.title}</span><span>ver →</span></div>
+    </div>`).join('');
+  $$('.g-item').forEach((el) => el.addEventListener('click', () => openLightbox(el.dataset.title, el.dataset.cat, el.style.backgroundImage)));
+
+  const list = $('#compareList');
+  if (showSliders && DB.remodelaciones.length) {
+    list.innerHTML = DB.remodelaciones.map((r, i) => `
+      <div>
+        <div class="compare-caption mono">${r.title || 'Remodelación'}</div>
+        ${compareMarkup(`remo-${i}`, r.before, r.after, 'Antes', 'Después')}
+      </div>
+    `).join('');
+    initCompareSliders('#compareList .compare');
+  } else {
+    list.innerHTML = '';
+  }
+}
+
+function compareMarkup(id, beforeUrl, afterUrl, beforeLabel, afterLabel) {
+  return `
+    <div class="compare" id="${id}">
+      <div class="layer after corner-ticks" style="${afterUrl ? `background-image:url('${afterUrl}')` : ''}">
+        ${afterUrl ? '' : `<span class="label l-after">${afterLabel}</span>`}
+      </div>
+      <div class="layer before" style="${beforeUrl ? `background-image:url('${beforeUrl}')` : ''}">
+        ${beforeUrl ? '' : `<div class="compare-wire"></div><span class="label l-before">${beforeLabel}</span>`}
+      </div>
+      <div class="handle" style="left:50%;"><div class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#15171A" stroke-width="2"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg></div></div>
+    </div>`;
+}
+
+/* ---------------- slider antes/después (reutilizable) ---------------- */
+function initCompareSliders(selector) {
+  $$(selector).forEach((compareEl) => {
+    const beforeLayer = compareEl.querySelector('.layer.before');
+    const handle = compareEl.querySelector('.handle');
+    let dragging = false;
+
+    function setCompare(pct) {
+      pct = Math.max(2, Math.min(98, pct));
+      beforeLayer.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+      handle.style.left = pct + '%';
+    }
+    function pctFromEvent(e) {
+      const rect = compareEl.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      return (x / rect.width) * 100;
+    }
+    compareEl.addEventListener('pointerdown', (e) => { dragging = true; setCompare(pctFromEvent(e)); });
+    window.addEventListener('pointermove', (e) => { if (dragging) setCompare(pctFromEvent(e)); });
+    window.addEventListener('pointerup', () => { dragging = false; });
+    setCompare(50);
+  });
+}
+
+/* ---------------- render: el proceso ---------------- */
+function renderProceso() {
+  const wrap = $('#procesoSlider');
+  if (!wrap) return;
+  const p = DB.compareProceso || { before: null, after: null };
+  wrap.innerHTML = compareMarkup('procesoCompare', p.before, p.after, 'Antes — modelo 3D', 'Después — render final');
+  initCompareSliders('#procesoSlider .compare');
+}
+
+/* ---------------- render: videos ---------------- */
+function renderVideos() {
+  $('#videoGrid').innerHTML = DB.videos.map((v) => {
+    const id = youtubeId(v.url);
+    if (id) {
+      return `
+        <div class="video-card grid-tile corner-ticks">
+          <iframe src="https://www.youtube.com/embed/${id}" title="${v.title}" allowfullscreen loading="lazy"></iframe>
+        </div>`;
+    }
+    return `
+      <div class="video-card grid-tile corner-ticks">
+        <div class="play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+        <div class="meta"><div class="mono">${v.title}</div><div class="mono" style="color:var(--ink-faint);">${v.cat}</div></div>
+      </div>`;
+  }).join('');
+}
+
+/* ---------------- render: precios ---------------- */
+function renderPricing() {
+  $('#priceGrid').innerHTML = DB.pricing.map((p) => `
+    <div class="price-card ${p.featured ? 'featured' : ''}">
+      <div class="p-tag mono">${p.tag}</div>
+      <h3>${p.title}</h3>
+      <div class="amount">$${Number(p.price || 0).toLocaleString('es-AR')} <span>ARS</span></div>
+      <div class="mono" style="font-size:11px;color:var(--ink-faint);">${p.unit}</div>
+      <ul>${p.items.map((it) => `<li>${it}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+/* ---------------- render: nosotros y contacto ---------------- */
+function renderAbout() {
+  $('#aboutText').textContent = DB.about.text;
+}
+
+function renderContact() {
+  const wa = (DB.contact.whatsapp || '').replace(/[^\d]/g, '');
+  if (wa) {
+    $('#waLink').textContent = DB.contact.whatsapp;
+    $('#waLink').href = `https://wa.me/${wa}?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20de%20renders`;
+  }
+  if (DB.contact.email) {
+    $('#mailLink').textContent = DB.contact.email;
+    $('#mailLink').href = `mailto:${DB.contact.email}`;
+  }
+  window.__WA_NUMBER__ = wa;
+}
+
+/* ---------------- lightbox ---------------- */
+function openLightbox(title, cat, bgImage) {
+  $('#lbTag').textContent = title + '.render';
+  $('#lbTitle').textContent = title;
+  $('#lbCat').textContent = cat;
+  const frame = $('#lbFrame');
+  frame.style.backgroundImage = bgImage || '';
+  frame.style.backgroundSize = 'cover';
+  frame.style.backgroundPosition = 'center';
+  $('#lightbox').classList.add('open');
+}
+$('#lbClose').addEventListener('click', () => $('#lightbox').classList.remove('open'));
+$('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') $('#lightbox').classList.remove('open'); });
+
+/* ---------------- mobile nav ---------------- */
+$('#burgerBtn').addEventListener('click', () => $('#mobileDrawer').classList.toggle('open'));
+$$('#mobileDrawer a').forEach((a) => a.addEventListener('click', () => $('#mobileDrawer').classList.remove('open')));
+
+/* ---------------- contact form (demo) ---------------- */
+$('#contactForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const msg = `Hola, soy ${data.get('nombre')}. ${data.get('mensaje')} (Email: ${data.get('email')})`;
+  const wa = window.__WA_NUMBER__;
+  if (wa) window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+  else alert('Todavía no hay un WhatsApp configurado para recibir consultas.');
+});
+
+/* ---------------- pintar todo ---------------- */
+function renderAll() {
+  renderIdentity();
+  renderStats();
+  renderCategories();
+  renderFilters();
+  renderGallery();
+  renderProceso();
+  renderVideos();
+  renderPricing();
+  renderAbout();
+  renderContact();
+}
+
+/* ---------------- init: pedir datos reales, si falla usar el respaldo ---------------- */
+$('#year').textContent = new Date().getFullYear();
+
+fetch(DATA_ENDPOINT)
+  .then((res) => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+  .then((json) => {
+    if (json.error) throw new Error(json.error);
+    // completar con respaldo cualquier lista que venga vacía, para no dejar secciones en blanco
+    DB = {
+      studio: json.studio?.name || json.studio?.logo ? json.studio : FALLBACK_DB.studio,
+      heroImage: json.heroImage || FALLBACK_DB.heroImage,
+      stats: json.stats?.length ? json.stats : FALLBACK_DB.stats,
+      services: json.services?.length ? json.services : FALLBACK_DB.services,
+      gallery: json.gallery?.length ? json.gallery : FALLBACK_DB.gallery,
+      compareProceso: json.compareProceso || FALLBACK_DB.compareProceso,
+      remodelaciones: json.remodelaciones || FALLBACK_DB.remodelaciones,
+      videos: json.videos?.length ? json.videos : FALLBACK_DB.videos,
+      pricing: json.pricing?.length ? json.pricing : FALLBACK_DB.pricing,
+      about: { ...FALLBACK_DB.about, ...json.about },
+      contact: json.contact || FALLBACK_DB.contact,
+    };
+    renderAll();
+  })
+  .catch((err) => {
+    console.warn('No se pudo conectar con Airtable, usando datos de ejemplo:', err.message);
+    DB = FALLBACK_DB;
+    renderAll();
+  });
+</script>
+</body>
+</html>
