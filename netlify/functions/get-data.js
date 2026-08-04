@@ -79,7 +79,7 @@ exports.handler = async function () {
       fetchTable(baseId, token, 'Contenido_General'),
     ]);
 
-    const general = generalRows[0] || {};
+    const general = generalRows.find((r) => Object.keys(r).length > 0) || generalRows[0] || {};
 
     const data = {
       studio: {
@@ -110,7 +110,7 @@ exports.handler = async function () {
         const row = antesDespues.find((r) => normalizeLoose(r.Tipo).includes('proceso'));
         if (!row) return null;
         return {
-          title: row['Título del proyecto'] || '',
+          title: findValue(row, ['titulo']) || '',
           before: findAttachmentUrl(row, ['antes']),
           after: findAttachmentUrl(row, ['despues']),
         };
@@ -120,7 +120,7 @@ exports.handler = async function () {
         .filter((r) => normalizeLoose(r.Tipo).includes('remodel'))
         .sort(byOrden)
         .map((r) => ({
-          title: r['Título del proyecto'] || '',
+          title: findValue(r, ['titulo']) || '',
           before: findAttachmentUrl(r, ['antes']),
           after: findAttachmentUrl(r, ['despues']),
         })),
