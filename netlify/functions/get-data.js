@@ -152,9 +152,10 @@ exports.handler = async function () {
       },
 
       contact: {
-        whatsapp: general.Whatsapp || '',
-        email: general.Email || '',
-        instagram: general.Instagram || '',
+        whatsapp: findValue(general, ['whatsapp']) || '',
+        email: findValue(general, ['email']) || findValue(general, ['mail']) || '',
+        instagram: findValue(general, ['instagram']) || '',
+        ubicacion: findValue(general, ['ubicacion']) || '',
       },
     };
 
