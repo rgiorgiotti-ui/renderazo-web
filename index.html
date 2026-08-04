@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>RenderAzo — Renders Arquitectónicos</title>
+<meta name="description" content="Renders y animaciones 3D hiperrealistas para arquitectos, desarrolladores y particulares. Interiores, exteriores, remodelaciones y recorridos virtuales.">
+
+<!-- Open Graph: controla cómo se ve el link al compartirlo en WhatsApp, Instagram, etc. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="RenderAzo — Renders Arquitectónicos">
+<meta property="og:description" content="Renders y animaciones 3D hiperrealistas para arquitectos, desarrolladores y particulares. Interiores, exteriores, remodelaciones y recorridos virtuales.">
+<meta property="og:url" content="https://renderazo.netlify.app/">
+<meta property="og:image" content="https://renderazo.netlify.app/preview.jpg">
+<meta property="og:locale" content="es_AR">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RenderAzo — Renders Arquitectónicos">
+<meta name="twitter:description" content="Renders y animaciones 3D hiperrealistas para arquitectos, desarrolladores y particulares.">
+<meta name="twitter:image" content="https://renderazo.netlify.app/preview.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -138,8 +152,8 @@
   .service-card h3{font-size:19px;margin:16px 0 10px;font-weight:600;}
   .service-card p{color:var(--ink-dim);font-size:14px;line-height:1.6;margin:0;}
 
-  .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);align-items:start;}
-  .category-card{background:var(--panel);display:flex;flex-direction:column;transition:background .2s ease;}
+  .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;}
+  .category-card{background:var(--panel);border:1px solid var(--stroke);display:flex;flex-direction:column;transition:background .2s ease;}
   .category-card:hover{background:var(--panel-raised);}
   .cat-thumb{aspect-ratio:4/3;position:relative;overflow:hidden;background-size:cover;background-position:center;}
   .cat-thumb .compare{aspect-ratio:4/3;max-width:none;margin:0;border:none;}
@@ -416,7 +430,7 @@
         <h3>Información directa</h3>
         <div class="contact-line"><span>WhatsApp</span><a href="#" id="waLink">+54 9 11 0000 0000</a></div>
         <div class="contact-line"><span>Email</span><a href="#" id="mailLink">hola@nodorenders.com</a></div>
-        <div class="contact-line"><span>Ubicación</span><span id="ubicacionText">Buenos Aires — trabajamos en todo el país</span></div>
+        <div class="contact-line"><span>Ubicación</span><span id="ubicacionText">Córdoba — trabajamos para todo el país</span></div>
         <div class="contact-line"><span>Instagram</span><a href="#" id="igLink">@renderazo</a></div>
       </div>
     </div>
