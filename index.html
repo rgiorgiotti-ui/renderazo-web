@@ -338,6 +338,7 @@
       <p>Arrastrá el separador para ver la transformación — así presentamos cada proyecto a nuestros clientes.</p>
     </div>
     <div id="procesoSlider"></div>
+    <p id="procesoCaption" class="mono" style="text-align:center;color:var(--ink-dim);font-size:13px;margin-top:16px;max-width:680px;margin-left:auto;margin-right:auto;"></p>
   </div>
 </section>
 
@@ -410,8 +411,8 @@
         <h3>Información directa</h3>
         <div class="contact-line"><span>WhatsApp</span><a href="#" id="waLink">+54 9 11 0000 0000</a></div>
         <div class="contact-line"><span>Email</span><a href="#" id="mailLink">hola@nodorenders.com</a></div>
-        <div class="contact-line"><span>Ubicación</span><span>Buenos Aires — trabajamos en todo el país</span></div>
-        <div class="contact-line"><span>Instagram</span><a href="#">@nodorenders</a></div>
+        <div class="contact-line"><span>Ubicación</span><span id="ubicacionText">Buenos Aires — trabajamos en todo el país</span></div>
+        <div class="contact-line"><span>Instagram</span><a href="#" id="igLink">@renderazo</a></div>
       </div>
     </div>
   </div>
@@ -572,27 +573,39 @@ function renderCategories() {
     const match = CATEGORY_KEYWORDS.find((c) => normalizeLoose(s.title).includes(c.kw));
     const catKey = match ? match.key : '';
     return `
-      <div class="category-card" data-cat="${catKey}">
+      <div class="category-card" data-idx="${i}" data-cat="${catKey}">
         ${categoryThumb(catKey, i)}
         <h3>${s.title}</h3>
-        <p>${truncate(s.text, 110)}</p>
-        <button class="cat-more mono" data-cat="${catKey}">Ver más →</button>
+        <p class="cat-text">${truncate(s.text, 110)}</p>
+        <button class="cat-more mono">Ver más →</button>
       </div>`;
   }).join('');
 
-  $$('.cat-more').forEach((btn) => btn.addEventListener('click', () => {
-    const cat = btn.dataset.cat;
-    if (cat === 'Videos') {
-      document.querySelector('#videos').scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-    if (cat) {
-      activeFilter = cat;
-      renderFilters();
-      renderGallery();
-    }
-    document.querySelector('#portfolio').scrollIntoView({ behavior: 'smooth' });
-  }));
+  $$('.category-card').forEach((card) => {
+    const idx = Number(card.dataset.idx);
+    const cat = card.dataset.cat;
+    const fullText = DB.services[idx]?.text || '';
+    const textEl = card.querySelector('.cat-text');
+    const btn = card.querySelector('.cat-more');
+    btn.addEventListener('click', () => {
+      if (!card.classList.contains('expanded')) {
+        card.classList.add('expanded');
+        textEl.textContent = fullText;
+        btn.textContent = cat === 'Videos' ? 'Ver videos →' : 'Ver ejemplos →';
+        return;
+      }
+      if (cat === 'Videos') {
+        document.querySelector('#videos').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      if (cat) {
+        activeFilter = cat;
+        renderFilters();
+        renderGallery();
+      }
+      document.querySelector('#portfolio')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
 
   initCompareSliders('.category-card .compare');
 }
@@ -693,6 +706,10 @@ function renderProceso() {
   const p = DB.compareProceso || { before: null, after: null };
   wrap.innerHTML = compareMarkup('procesoCompare', p.before, p.after, 'Antes — modelo 3D', 'Después — render final');
   initCompareSliders('#procesoSlider .compare');
+  const caption = $('#procesoCaption');
+  if (caption) {
+    caption.textContent = p.title || 'Antes: modelo 3D sin texturizar ni iluminar. Después: el mismo modelo con materiales, iluminación y entorno aplicados.';
+  }
 }
 
 /* ---------------- render: videos ---------------- */
@@ -739,6 +756,14 @@ function renderContact() {
   if (DB.contact.email) {
     $('#mailLink').textContent = DB.contact.email;
     $('#mailLink').href = `mailto:${DB.contact.email}`;
+  }
+  if (DB.contact.instagram) {
+    const handle = DB.contact.instagram.replace('@', '').trim();
+    $('#igLink').textContent = `@${handle}`;
+    $('#igLink').href = `https://instagram.com/${handle}`;
+  }
+  if (DB.contact.ubicacion) {
+    $('#ubicacionText').textContent = DB.contact.ubicacion;
   }
   window.__WA_NUMBER__ = wa;
 }
