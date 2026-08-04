@@ -33,6 +33,28 @@ async function fetchTable(baseId, token, tableName) {
 const byOrden = (a, b) => (a.Orden || 0) - (b.Orden || 0);
 const firstAttachmentUrl = (field) => (Array.isArray(field) && field[0] ? field[0].url : null);
 
+/* Busca una columna por palabra clave dentro de su nombre, sin importar
+   mayúsculas, tildes ni el resto del nombre exacto. Así "Desc_interiores"
+   o "Descripcion_Interiores" matchean igual buscando ['interior']. */
+function findKey(record, keywords) {
+  const normalize = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return Object.keys(record).find((k) => {
+    const nk = normalize(k);
+    return keywords.every((kw) => nk.includes(normalize(kw)));
+  });
+}
+function findValue(record, keywords) {
+  const key = findKey(record, keywords);
+  return key ? record[key] : '';
+}
+function findAttachmentUrl(record, keywords) {
+  const key = findKey(record, keywords);
+  return key ? firstAttachmentUrl(record[key]) : null;
+}
+function normalizeLoose(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 exports.handler = async function () {
   const token = process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID;
@@ -61,10 +83,10 @@ exports.handler = async function () {
 
     const data = {
       studio: {
-        name: general.Nombre_Estudio || '',
-        logo: firstAttachmentUrl(general.Logo),
+        name: findValue(general, ['nombre']) || findValue(general, ['estudio']) || '',
+        logo: findAttachmentUrl(general, ['logo']),
       },
-      heroImage: firstAttachmentUrl(general.Imagen_Hero),
+      heroImage: findAttachmentUrl(general, ['hero']),
       stats: [1, 2, 3, 4].map((n) => ({
         num: general[`Stat${n}_Numero`] || '',
         label: general[`Stat${n}_Label`] || '',
@@ -85,22 +107,22 @@ exports.handler = async function () {
         })),
 
       compareProceso: (() => {
-        const row = antesDespues.find((r) => r.Tipo === 'Proceso');
+        const row = antesDespues.find((r) => normalizeLoose(r.Tipo).includes('proceso'));
         if (!row) return null;
         return {
           title: row['Título del proyecto'] || '',
-          before: firstAttachmentUrl(row['Imagen antes']),
-          after: firstAttachmentUrl(row['Imagen después']),
+          before: findAttachmentUrl(row, ['antes']),
+          after: findAttachmentUrl(row, ['despues']),
         };
       })(),
 
       remodelaciones: antesDespues
-        .filter((r) => r.Tipo === 'Remodelación')
+        .filter((r) => normalizeLoose(r.Tipo).includes('remodel'))
         .sort(byOrden)
         .map((r) => ({
           title: r['Título del proyecto'] || '',
-          before: firstAttachmentUrl(r['Imagen antes']),
-          after: firstAttachmentUrl(r['Imagen después']),
+          before: findAttachmentUrl(r, ['antes']),
+          after: findAttachmentUrl(r, ['despues']),
         })),
 
       videos: videos
@@ -123,10 +145,10 @@ exports.handler = async function () {
         })),
 
       about: {
-        text: general['Texto_Nosotros'] || '',
-        descInteriores: general['Descripcion_Interiores'] || '',
-        descExteriores: general['Descripcion_Exteriores'] || '',
-        descRemodelaciones: general['Descripcion_Remodelaciones'] || '',
+        text: findValue(general, ['texto']) || findValue(general, ['nosotros']) || '',
+        descInteriores: findValue(general, ['interior']) || '',
+        descExteriores: findValue(general, ['exterior']) || '',
+        descRemodelaciones: findValue(general, ['remodel']) || '',
       },
 
       contact: {
@@ -143,7 +165,13 @@ exports.handler = async function () {
         'Cache-Control': 'public, max-age=60',
         'Access-Control-Allow-Origin': '*',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        _debug: {
+          columnasContenidoGeneral: Object.keys(general),
+          filasAntesDespues: antesDespues.map((r) => ({ tipo: r.Tipo, columnas: Object.keys(r) })),
+        },
+      }),
     };
   } catch (err) {
     return {
