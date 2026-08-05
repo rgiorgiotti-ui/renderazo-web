@@ -174,6 +174,7 @@
   /* ---------- antes/despues ---------- */
   .compare{position:relative;aspect-ratio:16/9;border:1px solid var(--stroke);overflow:hidden;user-select:none;cursor:ew-resize;max-width:680px;margin:0 auto;}
   .compare .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background-size:contain !important;background-repeat:no-repeat;background-position:center;background-color:#1a1c1f;}
+  .compare .layer-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
   .compare .before{background:repeating-linear-gradient(45deg, var(--panel) 0 8px, var(--panel-raised) 8px 16px);}
   .compare .after{background:linear-gradient(135deg,#2b2f36,#1a1c1f);overflow:hidden;}
   .compare .after-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
@@ -217,16 +218,25 @@
   .video-card .meta{position:absolute;bottom:14px;left:14px;right:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);}
 
   /* ---------- precios ---------- */
-  .price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);}
-  .price-card{background:var(--panel);padding:30px 24px;display:flex;flex-direction:column;}
-  .price-card.featured{background:var(--panel-raised);}
-  .price-card .p-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--signal);text-transform:uppercase;letter-spacing:.06em;}
-  .price-card h3{font-size:18px;margin:12px 0 18px;font-weight:600;}
-  .price-card .amount{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;margin-bottom:4px;}
-  .price-card .amount span{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);font-weight:400;}
-  .price-card ul{list-style:none;margin:18px 0 26px;padding:0;flex:1;}
-  .price-card li{font-size:13px;color:var(--ink-dim);padding:8px 0;border-top:1px solid var(--stroke);display:flex;gap:8px;}
-  .price-card li::before{content:'—';color:var(--cyan);}
+  .price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;}
+  .price-card{background:var(--panel);border:1px solid var(--stroke);padding:24px;display:flex;flex-direction:column;}
+  .price-card h3{font-size:16px;margin:0 0 16px;font-weight:600;line-height:1.3;}
+  .price-card .p-mark{color:var(--signal);font-weight:700;}
+  .price-card .p-line{font-size:13px;color:var(--ink-dim);margin-bottom:2px;}
+  .price-card .amount{font-family:'IBM Plex Mono',monospace;font-size:19px;color:var(--ink);font-weight:700;margin-bottom:12px;}
+  .price-card .p-meta{font-size:11px;color:var(--ink-faint);border-top:1px solid var(--stroke);padding-top:10px;margin:6px 0 14px;}
+  .price-card table{width:100%;font-size:12px;color:var(--ink-dim);border-collapse:collapse;margin-bottom:10px;}
+  .price-card table td{padding:3px 0;}
+  .price-card table td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+  .price-toggle{
+    margin-top:auto;background:none;border:1px solid var(--stroke);color:var(--cyan);cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+    padding:8px 10px;border-radius:2px;text-align:left;
+  }
+  .price-toggle:hover{border-color:var(--cyan);}
+  .price-cond{display:none;font-size:12px;color:var(--ink-dim);line-height:1.6;margin-top:10px;}
+  .price-cond p{margin:0 0 8px;}
+  .price-cond p:last-child{margin-bottom:0;}
   .price-note{margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);}
 
   /* ---------- about ---------- */
@@ -322,7 +332,7 @@
         <div class="hud"><span>X:00.0</span><span>Y:00.0</span><span>Z:00.0</span><span>RENDER_ENGINE: ACTIVO</span></div>
         <div class="eyebrow">Estudio de renderizado arquitectónico</div>
         <h1>Tu proyecto,<br><em>hiperrealista</em><br>antes de construirlo.</h1>
-        <p class="lead">Convertimos planos y bocetos en imágenes y videos fotorrealistas. Interiores, exteriores, animaciones 3D y recorridos virtuales para vender tu proyecto antes del primer ladrillo.</p>
+        <p class="lead">Convertimos planos y bocetos en imágenes y videos realistas. Interiores, exteriores, animaciones 3D y recorridos virtuales para vender tu proyecto antes del primer ladrillo.</p>
         <div class="hero-ctas">
           <a href="#contacto" class="btn btn-signal">Pedir cotización →</a>
           <a href="#portfolio" class="btn btn-ghost">Ver portfolio</a>
@@ -429,6 +439,7 @@
       <div class="contact-info">
         <h3>Información directa</h3>
         <div class="contact-line"><span>WhatsApp</span><a href="#" id="waLink">+54 9 11 0000 0000</a></div>
+        <div class="contact-line" id="waLine2" style="display:none;"><span>WhatsApp</span><a href="#" id="waLink2"></a></div>
         <div class="contact-line"><span>Email</span><a href="#" id="mailLink">hola@nodorenders.com</a></div>
         <div class="contact-line"><span>Ubicación</span><span id="ubicacionText">Córdoba — trabajamos para todo el país</span></div>
         <div class="contact-line"><span>Instagram</span><a href="#" id="igLink">@renderazo</a></div>
@@ -489,10 +500,17 @@ const FALLBACK_DB = {
   videos: [
     { title: 'Recorrido_Living.mp4', url: '', cat: 'Interior' },
   ],
-  pricing: [
-    { tag: 'Básico', title: 'Render interior', price: 35000, unit: 'por imagen', items: ['1 vista', 'Full HD', '1 ronda de ajustes', 'Entrega en 5 días'], featured: false },
-    { tag: 'Popular', title: 'Render exterior', price: 45000, unit: 'por imagen', items: ['1 vista', 'Full HD', '2 rondas de ajustes', 'Entrega en 5 días'], featured: true },
+  pricingBasic: [
+    { title: 'Modelado básico', priceImage: 160000, priceVideo: 490000, rondas: 3, entrega: 5, condiciones: 'El cliente entrega un modelo 3D básico (muros y aberturas en blanco, sin materiales, sin vegetación, con terreno y ubicación del edificio).' },
+    { title: 'Modelado completo', priceImage: 85000, priceVideo: 260000, rondas: 1, entrega: 5, condiciones: 'El cliente entrega un modelo 3D completo (con texturas, vegetación y entorno armado).' },
   ],
+  pricingM2: [
+    { tipo: 'Cubierto', priceImageM2: 2700, priceVideoM2: 3450, rondas: 4, entrega: 10 },
+    { tipo: 'Semicubierto', priceImageM2: 2100, priceVideoM2: 2850, rondas: 4, entrega: 10 },
+    { tipo: 'Interiores', priceImageM2: 1700, priceVideoM2: 2350, rondas: 4, entrega: 10 },
+  ],
+  notaVideo: 'Video de 50 segundos, formato horizontal.',
+  notaBajaComplejidad: 'Válido para modelos de baja complejidad, sin grandes luces ni geometrías complejas.',
   about: {
     text: 'Somos un estudio de renderizado arquitectónico que ayuda a arquitectos, estudios y desarrolladores a mostrar sus proyectos antes de construirlos.',
     descInteriores: 'Ambientes con materiales y luz realistas.',
@@ -677,7 +695,7 @@ function renderGallery() {
     list.innerHTML = DB.remodelaciones.map((r, i) => `
       <div>
         <div class="compare-caption mono">${r.title || 'Remodelación'}</div>
-        ${compareMarkup(`remo-${i}`, r.before, r.after, 'Antes', 'Después')}
+        ${compareMarkupImg(`remo-${i}`, r.before, r.after, 'Antes', 'Después')}
       </div>
     `).join('');
     initCompareSliders('#compareList .compare');
@@ -694,6 +712,23 @@ function compareMarkup(id, beforeUrl, afterUrl, beforeLabel, afterLabel) {
       </div>
       <div class="layer before" style="${beforeUrl ? `background-image:url('${beforeUrl}')` : ''}">
         ${beforeUrl ? '' : `<div class="compare-wire"></div><span class="label l-before">${beforeLabel}</span>`}
+      </div>
+      <div class="handle" style="left:50%;"><div class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#15171A" stroke-width="2"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg></div></div>
+    </div>`;
+}
+
+/* Versión alternativa, usada SOLO en "Nuestros Trabajos", con <img> real
+   en vez de fondo CSS — evita cualquier artefacto de repetición del
+   fondo, sea cual sea su causa. No afecta a El Proceso ni a la
+   miniatura de Servicios, que siguen usando compareMarkup() sin cambios. */
+function compareMarkupImg(id, beforeUrl, afterUrl, beforeLabel, afterLabel) {
+  return `
+    <div class="compare" id="${id}">
+      <div class="layer after corner-ticks">
+        ${afterUrl ? `<img class="layer-img" src="${afterUrl}" alt="">` : `<span class="label l-after">${afterLabel}</span>`}
+      </div>
+      <div class="layer before">
+        ${beforeUrl ? `<img class="layer-img" src="${beforeUrl}" alt="">` : `<div class="compare-wire"></div><span class="label l-before">${beforeLabel}</span>`}
       </div>
       <div class="handle" style="left:50%;"><div class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#15171A" stroke-width="2"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg></div></div>
     </div>`;
@@ -755,15 +790,85 @@ function renderVideos() {
 }
 
 /* ---------------- render: precios ---------------- */
+function moneyAR(n) {
+  return Number(n || 0).toLocaleString('es-AR');
+}
+
+function priceCard({ title, priceLabel1, price1, priceLabel2, price2, meta, condHtml, hasVideoNote, hasComplexNote }) {
+  const videoMark = hasVideoNote ? `<span class="p-mark">*</span>` : '';
+  const complexMark = hasComplexNote ? `<span class="p-mark">**</span>` : '';
+  return `
+    <div class="price-card">
+      <h3>${title}${complexMark}</h3>
+      <div class="p-line">${priceLabel1}${hasVideoNote && priceLabel1.includes('animaci') ? videoMark : ''}</div>
+      <div class="amount">$${moneyAR(price1)}</div>
+      ${priceLabel2 ? `
+        <div class="p-line">${priceLabel2}${videoMark}</div>
+        <div class="amount">$${moneyAR(price2)}</div>` : ''}
+      <div class="p-meta">${meta}</div>
+      <button class="price-toggle mono">Ver condiciones</button>
+      <div class="price-cond">${condHtml}</div>
+    </div>`;
+}
+
+function priceCardM2({ title, rows, meta, condHtml, hasVideoNote, hasComplexNote }) {
+  const videoMark = hasVideoNote ? `<span class="p-mark">*</span>` : '';
+  const complexMark = hasComplexNote ? `<span class="p-mark">**</span>` : '';
+  return `
+    <div class="price-card">
+      <h3>${title}${complexMark}${hasVideoNote ? videoMark : ''}</h3>
+      <table>${rows.map((r) => `<tr><td>${r.label}</td><td>$${moneyAR(r.value)}</td></tr>`).join('')}</table>
+      <div class="p-meta">${meta}</div>
+      <button class="price-toggle mono">Ver condiciones</button>
+      <div class="price-cond">${condHtml}</div>
+    </div>`;
+}
+
 function renderPricing() {
-  $('#priceGrid').innerHTML = DB.pricing.map((p) => `
-    <div class="price-card ${p.featured ? 'featured' : ''}">
-      <div class="p-tag mono">${p.tag}</div>
-      <h3>${p.title}</h3>
-      <div class="amount">$${Number(p.price || 0).toLocaleString('es-AR')} <span>ARS</span></div>
-      <div class="mono" style="font-size:11px;color:var(--ink-faint);">${p.unit}</div>
-      <ul>${p.items.map((it) => `<li>${it}</li>`).join('')}</ul>
-    </div>`).join('');
+  const notaVideoHtml = DB.notaVideo ? `<p><span class="p-mark">*</span> ${DB.notaVideo}</p>` : '';
+  const notaComplejaHtml = DB.notaBajaComplejidad ? `<p><span class="p-mark">**</span> ${DB.notaBajaComplejidad}</p>` : '';
+
+  const basicCards = (DB.pricingBasic || []).map((p) => priceCard({
+    title: p.title,
+    priceLabel1: '4 renders (vistas frontales)',
+    price1: p.priceImage,
+    priceLabel2: '4 escorzo + animación',
+    price2: p.priceVideo,
+    meta: `${p.rondas} ronda${p.rondas === 1 ? '' : 's'} de ajuste · entrega máx. ${p.entrega} días`,
+    condHtml: `${notaVideoHtml}<p>${p.condiciones}</p>`,
+    hasVideoNote: true,
+    hasComplexNote: false,
+  }));
+
+  const m2 = DB.pricingM2 || [];
+  const m2Meta = m2[0] ? `${m2[0].rondas} rondas de ajuste · entrega máx. ${m2[0].entrega} días` : '';
+
+  const m2ImageCard = priceCardM2({
+    title: 'Baja complejidad — por m²',
+    rows: m2.map((r) => ({ label: r.tipo, value: r.priceImageM2 })),
+    meta: `Imagen fija · ${m2Meta}`,
+    condHtml: notaComplejaHtml,
+    hasVideoNote: false,
+    hasComplexNote: true,
+  });
+
+  const m2VideoCard = priceCardM2({
+    title: 'Baja complejidad — por m² con animación',
+    rows: m2.map((r) => ({ label: r.tipo, value: r.priceVideoM2 })),
+    meta: m2Meta,
+    condHtml: `${notaVideoHtml}${notaComplejaHtml}`,
+    hasVideoNote: true,
+    hasComplexNote: true,
+  });
+
+  $('#priceGrid').innerHTML = basicCards.join('') + m2ImageCard + m2VideoCard;
+
+  $$('.price-toggle').forEach((btn) => btn.addEventListener('click', () => {
+    const body = btn.nextElementSibling;
+    const open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    btn.textContent = open ? 'Ver condiciones' : 'Ocultar condiciones';
+  }));
 }
 
 /* ---------------- render: nosotros y contacto ---------------- */
@@ -776,6 +881,12 @@ function renderContact() {
   if (wa) {
     $('#waLink').textContent = DB.contact.whatsapp;
     $('#waLink').href = `https://wa.me/${wa}?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20de%20renders`;
+  }
+  const wa2 = (DB.contact.whatsapp2 || '').replace(/[^\d]/g, '');
+  if (wa2) {
+    $('#waLink2').textContent = DB.contact.whatsapp2;
+    $('#waLink2').href = `https://wa.me/${wa2}?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20de%20renders`;
+    $('#waLine2').style.display = 'flex';
   }
   if (DB.contact.email) {
     $('#mailLink').textContent = DB.contact.email;
@@ -851,7 +962,10 @@ fetch(DATA_ENDPOINT)
       compareProceso: json.compareProceso || FALLBACK_DB.compareProceso,
       remodelaciones: json.remodelaciones || FALLBACK_DB.remodelaciones,
       videos: json.videos?.length ? json.videos : FALLBACK_DB.videos,
-      pricing: json.pricing?.length ? json.pricing : FALLBACK_DB.pricing,
+      pricingBasic: json.pricingBasic?.length ? json.pricingBasic : FALLBACK_DB.pricingBasic,
+      pricingM2: json.pricingM2?.length ? json.pricingM2 : FALLBACK_DB.pricingM2,
+      notaVideo: json.notaVideo || FALLBACK_DB.notaVideo,
+      notaBajaComplejidad: json.notaBajaComplejidad || FALLBACK_DB.notaBajaComplejidad,
       about: { ...FALLBACK_DB.about, ...json.about },
       contact: json.contact || FALLBACK_DB.contact,
     };
