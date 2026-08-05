@@ -43,6 +43,13 @@ function findKey(record, keywords) {
     return keywords.every((kw) => nk.includes(normalize(kw)));
   });
 }
+function findAllKeys(record, keywords) {
+  const normalize = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return Object.keys(record)
+    .filter((k) => keywords.every((kw) => normalize(k).includes(normalize(kw))))
+    .sort();
+}
+
 function findValue(record, keywords) {
   const key = findKey(record, keywords);
   return key ? record[key] : '';
@@ -70,16 +77,20 @@ exports.handler = async function () {
   }
 
   try {
-    const [servicios, trabajos, antesDespues, videos, precios, generalRows] = await Promise.all([
+    const [servicios, trabajos, antesDespues, videos, precios, preciosM2, generalRows] = await Promise.all([
       fetchTable(baseId, token, 'Servicios'),
       fetchTable(baseId, token, 'Nuestros Trabajos'),
       fetchTable(baseId, token, 'Antes_Después'),
       fetchTable(baseId, token, 'Videos'),
       fetchTable(baseId, token, 'Precios'),
+      fetchTable(baseId, token, 'Precios_M2'),
       fetchTable(baseId, token, 'Contenido_General'),
     ]);
 
-    const general = generalRows.find((r) => Object.keys(r).length > 0) || generalRows[0] || {};
+    const general = generalRows.reduce(
+      (best, r) => (Object.keys(r).length > Object.keys(best).length ? r : best),
+      generalRows[0] || {}
+    );
 
     const data = {
       studio: {
@@ -133,15 +144,25 @@ exports.handler = async function () {
           cat: v['Categoría'] || '',
         })),
 
-      pricing: precios
+      pricingBasic: precios
         .sort(byOrden)
         .map((p) => ({
-          tag: p.Etiqueta || '',
-          title: p.Servicio || '',
-          price: p.Precio || 0,
-          unit: p.Unidad || '',
-          items: (p.Incluye || '').split('\n').map((s) => s.trim()).filter(Boolean),
-          featured: !!p.Destacado,
+          title: findValue(p, ['titulo']) || '',
+          priceImage: findValue(p, ['precio', 'imagen']) || 0,
+          priceVideo: findValue(p, ['precio', 'video']) || 0,
+          rondas: findValue(p, ['rondas']) || 0,
+          entrega: findValue(p, ['entrega']) || 0,
+          condiciones: findValue(p, ['condicion']) || '',
+        })),
+
+      pricingM2: preciosM2
+        .sort(byOrden)
+        .map((p) => ({
+          tipo: findValue(p, ['superficie']) || findValue(p, ['tipo']) || '',
+          priceImageM2: findValue(p, ['precio', 'imagen']) || 0,
+          priceVideoM2: findValue(p, ['precio', 'video']) || 0,
+          rondas: findValue(p, ['rondas']) || 0,
+          entrega: findValue(p, ['entrega']) || 0,
         })),
 
       about: {
@@ -151,12 +172,19 @@ exports.handler = async function () {
         descRemodelaciones: findValue(general, ['remodel']) || '',
       },
 
-      contact: {
-        whatsapp: findValue(general, ['whatsapp']) || '',
-        email: findValue(general, ['email']) || findValue(general, ['mail']) || '',
-        instagram: findValue(general, ['instagram']) || '',
-        ubicacion: findValue(general, ['ubicacion']) || '',
-      },
+      notaVideo: findValue(general, ['nota', 'video']) || '',
+      notaBajaComplejidad: findValue(general, ['complejidad']) || '',
+
+      contact: (() => {
+        const waKeys = findAllKeys(general, ['whatsapp']);
+        return {
+          whatsapp: general[waKeys[0]] || '',
+          whatsapp2: general[waKeys[1]] || '',
+          email: findValue(general, ['email']) || findValue(general, ['mail']) || '',
+          instagram: findValue(general, ['instagram']) || '',
+          ubicacion: findValue(general, ['ubicacion']) || '',
+        };
+      })(),
     };
 
     return {
