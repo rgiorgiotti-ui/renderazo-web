@@ -265,6 +265,12 @@
   footer{padding:40px 0;}
   .foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-faint);}
   .foot-links{display:flex;gap:24px;}
+  .dev-credit{display:flex;align-items:center;gap:10px;color:var(--ink-faint);transition:opacity .15s;}
+  .dev-credit:hover{opacity:.8;}
+  .dev-credit:hover .dev-connect{color:var(--cyan);}
+  .dev-badge{background:#fff;padding:4px 10px;display:flex;align-items:center;border-radius:3px;}
+  .dev-badge img{height:16px;width:auto;display:block;}
+  .dev-connect{color:var(--ink-faint);font-size:11px;letter-spacing:.04em;text-transform:uppercase;}
 
   /* ---------- responsive ---------- */
   @media (max-width:980px){
@@ -453,6 +459,11 @@
     <div class="foot-links">
       <a href="#servicios">Servicios</a><a href="#portfolio">Portfolio</a><a href="#contacto">Contacto</a>
     </div>
+    <a href="https://wa.me/5493518126458?text=Hola%2C%20quiero%20consultar%20sobre%20mi%20sitio%20web" target="_blank" rel="noopener" class="dev-credit">
+      <span>Desarrollado por</span>
+      <span class="dev-badge"><img src="presencia-lab-logo.png" alt="Presencia.Lab"></span>
+      <span class="dev-connect mono">Conectar →</span>
+    </a>
   </div>
 </footer>
 
@@ -925,10 +936,14 @@ $$('#mobileDrawer a').forEach((a) => a.addEventListener('click', () => $('#mobil
 $('#contactForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const data = new FormData(e.target);
-  const msg = `Hola, soy ${data.get('nombre')}. ${data.get('mensaje')} (Email: ${data.get('email')})`;
-  const wa = window.__WA_NUMBER__;
-  if (wa) window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
-  else alert('Todavía no hay un WhatsApp configurado para recibir consultas.');
+  const email = DB.contact.email;
+  if (!email) {
+    alert('Todavía no hay un email configurado para recibir consultas.');
+    return;
+  }
+  const subject = `Consulta desde la web — ${data.get('nombre')}`;
+  const body = `${data.get('mensaje')}\n\nEmail de contacto: ${data.get('email')}`;
+  window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 });
 
 /* ---------------- pintar todo ---------------- */
